@@ -1,0 +1,62 @@
+%%writefile atividade4.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+/* Variaveis globais */
+int x = 0;
+pthread_mutex_t mutex;
+pthread_cond_t cond;
+
+/* Thread A */
+void *A(void *arg) {
+    printf("HELLO\n");
+
+    pthread_mutex_lock(&mutex);
+    x++;
+
+    if (x == 2) {
+        pthread_cond_broadcast(&cond);
+    }
+
+    pthread_mutex_unlock(&mutex);
+    pthread_exit(NULL);
+}
+
+/* Thread B */
+void *B(void *arg) {
+    pthread_mutex_lock(&mutex);
+
+    while (x < 2) {
+        pthread_cond_wait(&cond, &mutex);
+    }
+
+    pthread_mutex_unlock(&mutex);
+
+    printf("BYEBYE\n");
+
+    pthread_exit(NULL);
+}
+
+/* Main */
+int main() {
+    pthread_t threads[4];
+
+    pthread_mutex_init(&mutex, NULL);
+    pthread_cond_init(&cond, NULL);
+
+    /* 2 threads A + 2 threads B */
+    pthread_create(&threads[0], NULL, A, NULL);
+    pthread_create(&threads[1], NULL, A, NULL);
+    pthread_create(&threads[2], NULL, B, NULL);
+    pthread_create(&threads[3], NULL, B, NULL);
+
+    for (int i = 0; i < 4; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    pthread_mutex_destroy(&mutex);
+    pthread_cond_destroy(&cond);
+
+    return 0;
+}

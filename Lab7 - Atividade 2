@@ -1,0 +1,32 @@
+%%writefile omp_master.c
+
+#include <stdio.h>
+#include <omp.h>
+
+int main() {
+
+    // Defininmos a quantidade de threads
+    omp_set_num_threads(4);
+
+    #pragma omp parallel
+    {
+        int tid = omp_get_thread_num();
+        int total = omp_get_num_threads();
+        printf("Thread %d de %d threads executando\n", tid, total);
+
+
+        // REGIAO MASTER
+        #pragma omp master
+        {
+            printf("MASTER executada pela thread %d\n", tid);
+        }
+
+
+        // REGIAO SINGLE
+        #pragma omp single
+        {
+            printf("SINGLE executada pela thread %d\n", tid);
+        }
+    }
+    return 0;
+}

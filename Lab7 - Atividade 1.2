@@ -1,0 +1,41 @@
+%%writefile omp_hello.c
+
+#include <stdio.h>
+#include <omp.h>
+
+int main() {
+   // Imprime mensagem + ID da thread + total de threads
+    #pragma omp parallel
+    {
+        // ID da thread atual
+        int tid = omp_get_thread_num();
+
+        // Total de threads da região paralela
+        int total = omp_get_num_threads();
+
+        // Impressão das informações
+        printf("Alo da thread %d de %d threads\n", tid, total);
+    }
+
+
+    // Alterando numero de threads com funcao OpenMP
+
+    // Definindo manualmente número de threads 
+    omp_set_num_threads(4);
+    #pragma omp parallel
+    {
+        int tid = omp_get_thread_num();
+        int total = omp_get_num_threads();
+        printf("Thread %d de %d threads\n", tid, total);
+    }
+
+
+    // Alterando numero de threads usando clausula
+    #pragma omp parallel num_threads(6)
+    {
+        int tid = omp_get_thread_num();
+        int total = omp_get_num_threads();
+        printf("Thread %d de %d threads\n", tid, total);
+    }
+    return 0;
+}

@@ -1,0 +1,77 @@
+%%writefile omp_soma_vetor.c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+int main() {
+
+    int N = 1000000;
+
+    // Alocação do vetor
+    double *A = malloc(sizeof(double) * N);
+
+    // Inicialização do vetor
+    for (int i = 0; i < N; i++) {
+        A[i] = 1.0;
+    }
+
+    // Variável da soma final
+    double soma = 0.0;
+
+    // Define quantidade de threads
+    omp_set_num_threads(4);
+
+
+    // REGIÃO PARALELA
+    #pragma omp parallel
+    {
+        int tid = omp_get_thread_num();
+        int total = omp_get_num_threads();
+
+        // Soma local de cada thread
+        double soma_local = 0.0;
+
+        // Divide o vetor manualmente entre as threads
+        int inicio = tid * (N / total);
+        int fim = (tid + 1) * (N / total);
+
+        // Última thread pega restante do vetor
+        if (tid == total - 1) {
+            fim = N;
+        }
+
+        // Cada thread soma sua parte
+        for (int i = inicio; i < fim; i++) {
+            soma_local += A[i];
+        }
+
+
+        // SINGLE
+        #pragma omp single
+        {
+            printf("Iniciando soma paralela com %d threads\n", total);
+        }
+
+
+        // MASTER
+        #pragma omp master
+        {
+            printf("Master executada pela thread %d\n", tid);
+        }
+
+        // Atualiza soma global
+        #pragma omp critical
+        {
+            soma += soma_local;
+        }
+    }
+
+    // Resultado final
+    printf("Soma = %.0f\n", soma);
+
+    // Liberando memória
+    free(A);
+
+    return 0;
+}
